@@ -114,7 +114,8 @@ footer a{color:#67e8f9}
 <div><label for="b">Budget range (optional)</label><input id="b" placeholder="e.g. LKR 100,000 – 300,000"></div>
 <div class="f"><label for="d">Describe your requirement *</label><textarea id="d" required placeholder="What problem do you want to solve? Current process, number of documents/users, systems involved, expected outcome…"></textarea></div>
 <div class="f"><button class="btn" type="submit">Send Requirement to NIKfix</button></div>
-<div id="msg"><b>Almost done!</b> If your email app did not open, copy the text below and email it to <a href="mailto:nikzanch@gmail.com" style="color:var(--pr);font-weight:700">nikzanch@gmail.com</a>.<textarea id="out" readonly></textarea><button class="btn o" type="button" id="cp">Copy text</button></div>
+<div id="ok" style="grid-column:1/-1;display:none;padding:16px;border-radius:12px;background:rgba(16,185,129,.18);font-weight:600">✅ Thank you! Your requirement has been sent to NIKfix. We will contact you soon.</div>
+<div id="msg"><b>Could not send automatically.</b> Please copy the text below and email it to <a href="mailto:nikzanch@gmail.com" style="color:var(--pr);font-weight:700">nikzanch@gmail.com</a>.<textarea id="out" readonly></textarea><button class="btn o" type="button" id="cp">Copy text</button></div>
 </form></div></div></section>
 
 <a class="fab" href="https://wa.me/94777334055?text=Hello%20NIKfix%2C%20I%20need%20a%20solution" target="_blank" rel="noopener">💬 WhatsApp</a>
@@ -129,8 +130,11 @@ document.getElementById('rf').addEventListener('submit',function(ev){
   var body='NIKfix Requirement Request\n\nName: '+v('n')+'\nEmail: '+v('e')+'\nPhone: '+v('p')+'\nCompany: '+v('c')+'\nService: '+v('s')+'\nBusiness size: '+v('z')+'\nTimeline: '+v('t')+'\nBudget: '+v('b')+'\n\nRequirement:\n'+v('d');
   var subj='NIKfix Requirement: '+v('s')+' – '+v('n');
   document.getElementById('out').value=body;
-  document.getElementById('msg').style.display='block';
-  window.location.href='mailto:nikzanch@gmail.com?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+  var btn=ev.target.querySelector('button[type=submit]');btn.disabled=true;btn.textContent='Sending…';
+  var done=function(){btn.disabled=false;btn.textContent='Send Requirement to NIKfix'};
+  fetch('https://formspree.io/f/mzerkrrd',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({name:v('n'),email:v('e'),phone:v('p'),company:v('c'),service:v('s'),business_size:v('z'),timeline:v('t'),budget:v('b'),requirement:v('d'),_subject:subj,_replyto:v('e')})})
+  .then(function(r){if(!r.ok)throw new Error('fail');document.getElementById('ok').style.display='block';document.getElementById('msg').style.display='none';document.getElementById('rf').reset();done()})
+  .catch(function(){document.getElementById('ok').style.display='none';document.getElementById('msg').style.display='block';done();window.location.href='mailto:nikzanch@gmail.com?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body)});
 });
 document.getElementById('cp').addEventListener('click',function(){
   var o=document.getElementById('out');o.select();
